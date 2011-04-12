@@ -5,8 +5,13 @@
 inputSize = size(trainSet,1);
 momentum = 1;
 weightdecay = 0.001;
-targetActivation = 0.01;
-beta = 10; %sparsity term
+targetActivation = 0.03;
+
+%sparsity param annealing
+bSched = [40 20 10];
+bStart = [1 10 30];
+bPos = 1;
+beta = bSched(1);
 
 %%%%% learn rate stuff %%%%%%%%%%%
 
@@ -35,8 +40,8 @@ outbiases = zeros(inputSize,1);
 hidbiases = zeros(hiddenLayerSize,1);
 
 %%%%%%%%%% maybe make trainSet between 0 and 1??? %%%%%
-trainSet = trainSet - min(min(trainSet));
-trainSet = trainSet./max(max(trainSet));
+% trainSet = trainSet - min(min(trainSet));
+% trainSet = trainSet./max(max(trainSet));
 
 %% train rbm
 for epoch=1:numepochs
@@ -49,6 +54,15 @@ for epoch=1:numepochs
         if (epoch >= anStart(anPos+1))
             anPos = anPos +1;
             learnrate = anSched(anPos);
+        end
+    end
+    
+    if (bPos < length(bStart))
+        if (epoch >= bStart(bPos+1))
+            bPos = bPos +1;
+            beta = bSched(bPos);
+            betaVal = beta
+            epochChange = epoch
         end
     end
     
@@ -75,7 +89,7 @@ for epoch=1:numepochs
         hidact  = 1./(1 +  exp( -hidact ));
         
         output = hidout*hidact + repmat(outbiases,1,batchSize);
-        output = 1./(1 + exp( -output ));
+%         output = 1./(1 + exp( -output ));
         
       
         %% update sparsity
@@ -89,9 +103,9 @@ for epoch=1:numepochs
         
         %% calc error and update scores %%%%%%%%%%%%%%%%%%
         err = data - output;
-        delta = -(err) .* (output.*(1-output));
+        delta = -(err) ;% .* (output.*(1-output));
         hid_delta = (hidout'*delta + beta*sparse_grad_toAdd) ...
-            .*(hidact.*(1-hidact));
+             .*(hidact.*(1-hidact));
         
         error = sum(sum(err.^2));
         errsum = errsum + error;
@@ -116,8 +130,8 @@ for epoch=1:numepochs
         
     
     %% Output Statistics
-    fprintf('Epoch   %d\t Error %f\t W-Norm %f\t Time %f\n', ...
-            epoch, errsum, norm(vishid(:)), toc);
+    fprintf('Epoch   %d\t Error %f\t Avg Sparsity  %f\t W-Norm %f\t Time %f\n', ...
+            epoch, errsum, mean(pHat), norm(vishid(:)), toc);
 %     
 %     toplot = vishid - min(min(vishid));
 %     toplot = toplot./(max(max(toplot)));

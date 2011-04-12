@@ -3,7 +3,7 @@ load IMAGES.mat;
 %params
 
 imsize = 20
-numpatches = 10000
+numpatches = 50000
 
 %initialize stuff
 trainSet = zeros(imsize*imsize, numpatches);
@@ -29,4 +29,4 @@ end
 % clear all except training data
 clearvars -except trainSet
 
-hiddenLayerSize = 500
+hiddenLayerSize = 300

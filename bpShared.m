@@ -6,7 +6,7 @@ inputSize = size(trainSet,1);
 momentum = 1;
 weightdecay = 0.001;
 targetActivation = 0.01;
-beta = 5; %sparsity term
+beta = 3; %sparsity term
 
 %%%%% learn rate stuff %%%%%%%%%%%
 
@@ -33,8 +33,8 @@ outbiases = zeros(inputSize,1);
 hidbiases = zeros(hiddenLayerSize,1);
 
 %%%%%%%%%% maybe make trainSet between 0 and 1??? %%%%%
-trainSet = trainSet - min(min(trainSet));
-trainSet = trainSet./max(max(trainSet));
+% trainSet = trainSet - min(min(trainSet));
+% trainSet = trainSet./max(max(trainSet));
 
 %% train rbm
 for epoch=1:numepochs
@@ -72,7 +72,7 @@ for epoch=1:numepochs
         hidact  = 1./(1 +  exp( -hidact ));
         
         output = vishid'*hidact + repmat(outbiases,1,batchSize);
-        output = 1./(1 + exp( -output ));
+%         output = 1./(1 + exp( -output ));
         
         
       
@@ -87,15 +87,15 @@ for epoch=1:numepochs
         
         %% calc error and update scores %%%%%%%%%%%%%%%%%%
         err = data - output;
-        delta = -(err)  .* (output.*(1-output));
+        delta = -(err) ;%  .* (output.*(1-output));
         hid_delta = (vishid*delta + beta*sparse_grad_toAdd) ...
-            .*(hidact.*(1-hidact));
+            ;%.*(hidact.*(1-hidact));
         
         error = sum(sum(err.^2));
         errsum = errsum + error;
         
 
-        vishidinc = vishidinc + hid_delta*data' + hidact*delta';
+        vishidinc = vishidinc + (hid_delta*data' + hidact*delta')./2;
         hidbiasinc = hidbiasinc + sum(hid_delta,2);
         outbiasinc = outbiasinc + sum(delta,2);
         
@@ -111,8 +111,8 @@ for epoch=1:numepochs
         
     
     %% Output Statistics
-    fprintf('Epoch   %d\t Error %f\t W-Norm %f\t Time %f\n', ...
-            epoch, errsum, norm(vishid(:)), toc);
+    fprintf('Epoch   %d\t Error %f\t Avg Sparsity  %f\t W-Norm %f\t Time %f\n', ...
+            epoch, errsum, mean(pHat), norm(vishid(:)), toc);
 %     
 %     toplot = vishid - min(min(vishid));
 %     toplot = toplot./(max(max(toplot)));
