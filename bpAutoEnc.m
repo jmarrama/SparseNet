@@ -129,8 +129,7 @@ for epoch=1:numepochs
         hid_delta = (hidout'*delta + beta*sparse_grad_toAdd) ...
             ;% .*(hidact.*(1-hidact));
         
-        error = sum(sum(err.^2));
-        errsum = errsum + error;
+        errsum = errsum + sum(sum(err.^2));
 
         vishidinc = momentum*vishidinc + hid_delta*data';
         hidoutinc = momentum*hidoutinc + delta*hidact';
