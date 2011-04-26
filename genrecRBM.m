@@ -1,20 +1,21 @@
-%function [vishid, nextLayerData] = genrecRBM(trainSet, hiddenLayerSize)
+function [vishid, nextLayerData] = genrecRBM(trainSet, hiddenLayerSize)
 
 %set initial params
 %%%%%%%% learning params %%%%%%%%%%%%%%%%
 inputSize = size(trainSet,1);
-learnrate = 0.01;
-momentum = 0.9;
+momentum = 0.0;
 weightdecay = 0.0;
 
-anSched = [0.01 0.01 0.005 0.001];
-anStart = [1 5 40 135];
+anSched = [3 1];
+anStart = [1 20];
 anPos = 1;
+learnrate = anSched(1);
 
 %%%%%%%%% algorithm params %%%%%%%%%%%%%
 numepochs = 60;
-batchSize = 10;
-numBatches = floor(size(trainSet,2)/batchSize);
+numEx = size(trainSet,2);
+batchSize = numEx;
+numBatches = floor(numEx/batchSize);
 
 vishidinc = 0;
 %visbiasinc = 0;
@@ -32,11 +33,11 @@ for epoch=1:numepochs
     tic;
     
     %%%%%%%% simulated annealing with momentum and learning rate %%%%%%%%
-    if epoch>5,
-        momentum = 0.9;
-    else
-        momentum = 0.5;
-    end;
+%     if epoch>5,
+%         momentum = 0.9;
+%     else
+%         momentum = 0.5;
+%     end;
     
     if (anPos < length(anStart))
         if (epoch >= anStart(anPos+1))
@@ -67,7 +68,7 @@ for epoch=1:numepochs
         errsum = errsum + error;
         
         vishidinc = momentum*vishidinc + ...
-            learnrate*((hidact - neghidact)*output' - weightdecay*vishid);
+            learnrate*((hidact - neghidact)*output' - weightdecay*vishid)./batchSize;
         
         vishid = vishid + vishidinc;
         
@@ -76,7 +77,7 @@ for epoch=1:numepochs
     % Output Statistics
     fprintf('Epoch   %d\t Error %f\t W-Norm %f\t Time %f\n', ...
             epoch, errsum, norm(vishid(:)), toc);
-    plotrf(vishid', floor((size(trainSet,1))^.5), 'temp');
+     plotrf(vishid', floor((size(trainSet,1))^.5), 'temp');
     
     
 end
@@ -84,4 +85,4 @@ end
 nextLayerData = vishid*trainSet;
 
 
-%end
+end

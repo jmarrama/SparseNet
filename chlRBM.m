@@ -3,17 +3,18 @@ function [vishid, nextLayerData] = chlRBM(trainSet, hiddenLayerSize)
 %set initial params
 %%%%%%%% learning params %%%%%%%%%%%%%%%%
 inputSize = size(trainSet,1);
-learnrate = 0.01;
-momentum = 0.9;
-weightdecay = 0.0;
+momentum = 0.0;
+weightdecay = 0.01;
 
-anSched = [0.01 0.01 0.005 0.001];
-anStart = [1 5 40 135];
+anSched = [0.6 0.5 0.1];
+anStart = [1 20 4000];
 anPos = 1;
+learnrate = anSched(1);
 
 %%%%%%%%% algorithm params %%%%%%%%%%%%%
-numepochs = 60;
-batchSize = 50;
+numepochs = 1000;
+numEx = size(trainSet,2);
+batchSize = numEx;
 numBatches = floor(size(trainSet,2)/batchSize);
 
 vishidinc = 0;
@@ -21,7 +22,7 @@ vishidinc = 0;
 %hidbiasinc = 0;
 
 %%%%%%%%% initialize weights %%%%%%%%%%%%%%
-vishid = 0.05*randn(hiddenLayerSize, inputSize);
+vishid = 0.01*randn(hiddenLayerSize, inputSize);
 %visbiases = zeros(inputSize,1);
 %hidbiases = zeros(hiddenLayerSize,1);
 
@@ -32,11 +33,11 @@ for epoch=1:numepochs
     tic;
     
     %%%%%%%% simulated annealing with momentum and learning rate %%%%%%%%
-    if epoch>5,
-        momentum = 0.9;
-    else
-        momentum = 0.5;
-    end;
+%     if epoch>5,
+%         momentum = 0.9;
+%     else
+%         momentum = 0.5;
+%     end;
     
     if (anPos < length(anStart))
         if (epoch >= anStart(anPos+1))
@@ -67,7 +68,7 @@ for epoch=1:numepochs
         errsum = errsum + error;
         
         vishidinc = momentum*vishidinc + ...
-            learnrate*(hidact*data' - neghidact*output' - weightdecay*vishid);
+            learnrate*(hidact*data' - neghidact*output' - weightdecay*vishid)./batchSize;
         
         vishid = vishid + vishidinc;
         
@@ -76,7 +77,7 @@ for epoch=1:numepochs
     % Output Statistics
     fprintf('Epoch   %d\t Error %f\t W-Norm %f\t Time %f\n', ...
             epoch, errsum, norm(vishid(:)), toc);
-    %plotrf(vishid', floor((size(trainSet,1))^.5), 'temp');
+    plotrf(vishid', floor((size(trainSet,1))^.5), 'temp');
     
     
 end

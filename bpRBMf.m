@@ -1,19 +1,20 @@
-% function [vishid, nextLayerData] = bpRBMf(trainSet, hiddenLayerSize)
+function [vishid, nextLayerData] = bpRBMf(trainSet, hiddenLayerSize)
 
 %set initial params
 %%%%%%%% learning params %%%%%%%%%%%%%%%%
 inputSize = size(trainSet,1);
-learnrate = 0.01;
-momentum = 0.9;
-weightdecay = 0.001;
+momentum = 0.0;
+weightdecay = 0.01;
 
-anSched = [0.05 0.01 0.005 0.001];
-anStart = [1 5 40 135];
+anSched = [0.5 0.5];
+anStart = [1 5];
 anPos = 1;
+learnrate = anSched(1);
 
 %%%%%%%%% algorithm params %%%%%%%%%%%%%
-numepochs = 60;
-batchSize = 50;
+numepochs = 1000;
+numEx = size(trainSet,2);
+batchSize = numEx;
 numBatches = floor(size(trainSet,2)/batchSize);
 
 vishidinc = 0;
@@ -32,11 +33,6 @@ for epoch=1:numepochs
     tic;
     
     %%%%%%%% simulated annealing with momentum and learning rate %%%%%%%%
-    if epoch>5,
-        momentum = 0.9;
-    else
-        momentum = 0.5;
-    end;
     
     if (anPos < length(anStart))
         if (epoch >= anStart(anPos+1))
@@ -65,12 +61,12 @@ for epoch=1:numepochs
         error = sum(sum(delta.^2));
         errsum = errsum + error;
         
-        vishidinc = momentum*vishidinc + ...
-            learnrate*(hidact*(delta') - weightdecay*vishid);
-        
-        vishid = vishid + vishidinc;
+        vishidinc = momentum*vishidinc + hidact*(delta');
         
     end
+    
+    vishid = vishid + learnrate*(vishidinc./numEx ...
+        - weightdecay*vishid);
     
     % Output Statistics
     fprintf('Epoch   %d\t Error %f\t W-Norm %f\t Time %f\n', ...
@@ -83,4 +79,4 @@ end
 nextLayerData = vishid*trainSet;
 
 
-%end
+end

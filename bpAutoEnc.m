@@ -3,20 +3,20 @@
 %% set initial params
 %%%%%%%% learning params %%%%%%%%%%%%%%%%
 inputSize = size(trainSet,1);
-momentum = .8;
-weightdecay = 0;
-targetActivation = 0.03;
+momentum = 0;
+weightdecay = 0.001;
+targetActivation = -0.03;
 
 %sparsity param annealing
-bSched = [.0001];
+bSched = [.001];
 bStart = [1];
 bPos = 1;
 beta = bSched(1);
 
 %%%%% learn rate stuff %%%%%%%%%%%
 
-anSched = [0.01 0.01 0.01 0.01 0.005];
-anStart = [1 5 10 30 60];
+anSched = [0.01 0.01 0.01 ];
+anStart = [1 5 10 ];
 anPos = 1;
 learnrate = anSched(1);
 

@@ -29,4 +29,4 @@ end
 % clear all except training data
 clearvars -except trainSet
 
-hiddenLayerSize = 500
+hiddenLayerSize = 300
